@@ -5,7 +5,7 @@ export const styles = StyleSheet.create({
     container: {
         // marginHorizontal: 24,
         padding: 12,
-        backgroundColor: theme.colors.gray_100,
+        // backgroundColor: theme.colors.gray_100,
         flexDirection: "row",
         alignItems: "center",
         gap: 10,

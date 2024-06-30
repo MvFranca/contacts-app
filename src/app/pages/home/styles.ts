@@ -18,6 +18,10 @@ export const styles = StyleSheet.create({
         flexDirection: "column",
         justifyContent: "flex-end",
         alignItems: "flex-start",
+
+        zIndex: 1,
+
+        marginBottom: 32,
     },
 
     input: {
@@ -35,11 +39,60 @@ export const styles = StyleSheet.create({
         textAlign: "center",
         textAlignVertical: "center",
         borderRadius: 8,
-        marginTop:32
+        // marginTop:32
     },
 
     contentList: {
         padding: 24,
         gap: 10
+    },
+
+    separator: {
+        width: '100%',
+        height: 1,
+
+        backgroundColor: theme.colors.gray_300,
+        marginTop: 12,
+    },
+
+    bottomSheet: {
+        backgroundColor: 'transparent',
+    },
+    
+    bottomSheetContent: {
+        flex: 1,
+        backgroundColor: theme.colors.gray_100,
+        borderTopStartRadius: 32,
+        borderTopEndRadius: 32,
+        paddingTop: 64,
+        alignItems: "center",
+        gap: 10,
+        padding: 32,
+
+    },
+
+    image: {
+
+        marginBottom: -50,
+        zIndex: 1,
+        alignSelf: "center"
+
+    },
+
+    contactName: {
+        fontSize: 32,
+        fontFamily: theme.fontFamily.bold
+    },
+
+    phoneNumber: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 5,
+        marginBottom: 24,
+    }, 
+    phone: {
+        fontSize: 18,
+        fontFamily: theme.fontFamily.medium,
+        color: theme.colors.gray_400
     }
 })

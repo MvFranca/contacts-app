@@ -5,16 +5,39 @@ import { Input } from "@/app/components/input";
 import {Feather} from "@expo/vector-icons"
 
 import { theme } from "@/theme";
-import { useEffect, useState } from "react";
-import Contact from "@/app/components/contact";
+import { useEffect, useState, useId, useRef } from "react";
+import Contact, { ContactProps } from "@/app/components/contact";
 import * as Contacts from "expo-contacts"
 
+import BottomSheet from "@gorhom/bottom-sheet"
+import Avatar from "@/app/components/avatar";
+import Button from "@/app/components/button";
+
+type SectionListDataProps = {
+    title: string,
+    data: ContactProps[]
+}
 
 const Home = () => {
 
     const [name, setName] = useState("")
 
-    const [contacts, setContacts] = useState<Contacts.Contact[]>([])
+    const [contacts, setContacts] = useState<SectionListDataProps[]>([])
+    const [contact, setContact] = useState<Contacts.Contact>()
+
+    const bottomSheetRef = useRef<BottomSheet>(null)
+
+    const handleBottomSheetOpen = () => bottomSheetRef.current!.expand()
+
+    const handleBottomSheetClose = () => bottomSheetRef.current!.snapToIndex(0)
+
+    const handleOpenDetails = async (id: string) => {
+
+        
+        const response = await Contacts.getContactByIdAsync(id)
+        setContact(response)
+        handleBottomSheetOpen()
+    }
 
     async function fetchContacts(){
         try {
@@ -22,12 +45,40 @@ const Home = () => {
 
             if(status === Contacts.PermissionStatus.GRANTED){
 
-                const { data } = await Contacts.getContactsAsync()
+                const { data } = await Contacts.getContactsAsync({
+                    name,
+                    sort: "firstName"
+                })
 
-                setContacts(data)
-                // setContacts(data.image)
+                const list = data
+                .map((contact) => ({
+                    id: contact.id ?? useId(),
+                    name: contact.name,
+                    image: contact.image
+                }))
+                .reduce<SectionListDataProps[]>((acc: any, item) => {
 
+                    const firstLetter = item.name[0].toUpperCase()
 
+                    const existinggEntry = acc.find((entry: SectionListDataProps) => {
+                        entry.title === firstLetter
+                    })
+
+                    if(existinggEntry){
+                        existinggEntry.data.push(item)
+                    }
+                    else {
+                        acc.push({title: firstLetter, data: [item]})
+                    }
+
+                    return acc
+                }, [])
+                
+                setContacts(list)
+                setContact(data[0])
+            }
+            else{
+                throw Error("Deu ruim")
             }
 
         }
@@ -39,12 +90,7 @@ const Home = () => {
 
     useEffect(() => {
         fetchContacts()
-    }, [])
-
-    useEffect(() => {
-        console.log(contacts)
-
-    }, [contacts])
+    }, [name])
 
 
     return ( 
@@ -64,31 +110,60 @@ const Home = () => {
                 </Input>
             </View>
 
-
-            {/* <Contact
-                                key={index}
-                                contact={{
-                                    name: `${contact.name}`,
-                                    image: require(`${contact.image.uri}`)
-                                }}
-                            />   */}
-
             <SectionList 
-                sections={[ { title: "M", data: [{id: "1", name: "Marcos"},{id: "2", name: "Márcio"}]} ]}
+                sections={contacts}
                 keyExtractor={(item) => item.id}
+                
+                
                 renderItem={({item}) => (
                     <Contact
-                    contact={{
-                        name: `${item.name}`,
-                        // image: require(`${item.image.uri}`)
-                        }}
+                    onPress={() => handleOpenDetails(item.id)}
+                    contact={item}
                     /> 
                 )}
-                renderSectionHeader = {({section}) => <Text style={styles.title}>{section.title}</Text>}
-
+                
+                renderSectionHeader = {
+                    ({section}) => 
+                    <Text style={styles.title}>{section.title}</Text>
+                }
                 contentContainerStyle={styles.contentList}
+
+                ItemSeparatorComponent={() => <View style={styles.separator}/>}
+
+                
             />
 
+            {
+            contact?.phoneNumbers && 
+
+            <BottomSheet
+                ref={bottomSheetRef}
+                snapPoints={[0.01, 284]}
+                handleComponent={() => null}
+                backgroundStyle={styles.bottomSheet}
+            >
+                <Avatar name={contact.name} image={contact.image} variant="large" containerStyle={styles.image}/>
+
+         
+                <View style={styles.bottomSheetContent}>
+                    <Text style={styles.contactName}>
+                        {
+                            contact?.name
+                        }
+                    </Text>
+
+                    <View style={styles.phoneNumber}>
+                        <Feather name="phone" size={18} color={theme.colors.blue}/>
+                        <Text style={styles.phone}>
+                            {
+                                contact.phoneNumbers[0].number
+                            }
+                        </Text>
+                    </View>
+                <Button title="Fechar" onPress={handleBottomSheetClose} />
+                </View>
+             </BottomSheet>
+            }
 
         </View>
      );

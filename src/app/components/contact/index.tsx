@@ -4,6 +4,7 @@ import Avatar from "../avatar";
 import { useState } from "react";
 
 export type ContactProps = {
+    id: string,
     name: string,
     image?: ImageProps
 }
